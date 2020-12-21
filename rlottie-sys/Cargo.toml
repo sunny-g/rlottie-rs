@@ -1,0 +1,10 @@
+[package]
+name = "rlottie-sys"
+version = "0.0.1"
+authors = ["sunny-g <sunny.gonna@gmail.com>"]
+edition = "2018"
+
+[build-dependencies]
+bindgen = "0.56"
+cc = "1.0.66"
+cmake = "0.1.45"

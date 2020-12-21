@@ -1,0 +1,9 @@
+[package]
+name = "rlottie"
+version = "0.0.1"
+authors = ["sunny-g <sunny.gonna@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rlottie-sys = { path = "../rlottie-sys" }
+thiserror = "1.0.22"
