@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "iced-rlottie",
+  "rlottie",
+  "rlottie-sys",
+]

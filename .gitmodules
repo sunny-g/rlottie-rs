@@ -1,0 +1,3 @@
+[submodule "rlottie-sys/rlottie"]
+	path = rlottie-sys/rlottie
+	url = git@github.com:samsung/rlottie
