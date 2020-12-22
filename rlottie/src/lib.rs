@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_load_animation() {
-        let loading = std::fs::read_to_string("../examples/loading.json").unwrap();
-        assert!(LottieAnimation::from_data(loading, "", "").is_ok())
+        let loading = std::fs::read_to_string("examples/loading.json").unwrap();
+        assert!(LottieAnimation::from_data(loading, "loading", "").is_ok());
     }
 }
