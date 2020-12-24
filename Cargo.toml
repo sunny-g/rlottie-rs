@@ -4,3 +4,8 @@ members = [
   "rlottie",
   "rlottie-sys",
 ]
+
+[patch.crates-io]
+iced_core = { git = "https://github.com/twitchyliquid64/iced", branch = "text_input" }
+iced_graphics = { git = "https://github.com/twitchyliquid64/iced", branch = "text_input" }
+iced_native = { git = "https://github.com/twitchyliquid64/iced", branch = "text_input" }

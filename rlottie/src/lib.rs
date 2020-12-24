@@ -29,6 +29,7 @@ pub trait Surface {
 pub struct LottieAnimation {
     key: CString,
     resource_path: CString,
+    frame_num: usize,
     inner: *mut ffi::Lottie_Animation,
     // _surface: PhantomData,
 }
@@ -36,27 +37,7 @@ pub struct LottieAnimation {
 ///
 impl LottieAnimation {
     ///
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        let path = path.as_ref();
-        let data = read_to_string(path).map_err(|e| {
-            Error::Animation(format!(
-                "unable to read lottie file from path {:?}: {}",
-                &path, e
-            ))
-        })?;
-        let key = path
-            .file_name()
-            .and_then(|s| s.to_str())
-            .ok_or_else(|| Error::Animation(format!("invalid path filename: {:?}", &path)))?;
-        let resource_path = path
-            .to_str()
-            .ok_or_else(|| Error::Animation(format!("invalid file path: {:?}", &path)))?;
-
-        Self::from_data(data, key, resource_path)
-    }
-
-    ///
-    pub fn from_data(data: String, key: &str, resource_path: &str) -> Result<Self, Error> {
+    pub fn new(data: String, key: &str, resource_path: &str) -> Result<Self, Error> {
         let data = CString::new(data).map_err(|e| Error::FFI(format!("{}", e)))?;
         let key = CString::new(key).map_err(|e| Error::FFI(format!("{}", e)))?;
         let resource_path =
@@ -72,10 +53,31 @@ impl LottieAnimation {
             Ok(Self {
                 key,
                 resource_path,
+                frame_num: 0,
                 inner,
                 // _surface: PhantomData,
             })
         }
+    }
+
+    ///
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Error> {
+        let path = path.as_ref();
+        let data = read_to_string(path).map_err(|e| {
+            Error::Animation(format!(
+                "unable to read lottie file from path {:?}: {}",
+                &path, e
+            ))
+        })?;
+        let key = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or_else(|| Error::Animation(format!("invalid path filename: {:?}", &path)))?;
+        let resource_path = path
+            .to_str()
+            .ok_or_else(|| Error::Animation(format!("invalid file path: {:?}", &path)))?;
+
+        Self::new(data, key, resource_path)
     }
 
     ///
@@ -188,27 +190,47 @@ impl LottieAnimation {
     //     unimplemented!()
     // }
 
-    pub fn render(
+    pub fn render_sync(
         &mut self,
-        frame_num: usize,
         buffer: &mut [u32],
         width: usize,
         height: usize,
         bytes_per_line: usize,
     ) {
+        unsafe {
+            ffi::lottie_animation_render(
+                self.inner,
+                self.frame_num,
+                buffer.as_mut_ptr(),
+                width,
+                height,
+                bytes_per_line,
+            );
+        }
+
+        self.increment_frame()
     }
 
-    pub fn render_async(
-        &mut self,
-        frame_num: usize,
-        buffer: &mut [u32],
-        width: usize,
-        height: usize,
-        bytes_per_line: usize,
-    ) {
-    }
+    // pub async fn render(
+    //     &mut self,
+    //     buffer: &mut [u8],
+    //     width: usize,
+    //     height: usize,
+    //     bytes_per_line: usize,
+    // ) {
+    //     self.increment_frame()
+    // }
 
-    pub fn render_flush(&mut self) {}
+    // pub fn render_flush(&mut self) {}
+
+    #[inline(always)]
+    fn increment_frame(&mut self) {
+        if self.num_frames() == self.frame_num {
+            self.frame_num += 1
+        } else {
+            self.frame_num = 0
+        };
+    }
 }
 
 impl Drop for LottieAnimation {
